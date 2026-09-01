@@ -34,6 +34,7 @@ except ImportError:
 sys.path.insert(0, os.path.dirname(__file__))
 from modules import adb_manager, apk_analyzer, network_scanner
 from modules import vulnerability_scanner, exploit_engine, payload_generator, report_generator
+from modules import device_info_extended
 
 console = Console()
 
@@ -133,7 +134,7 @@ def print_banner():
 # ═══════════════════════════════════════════════════════════════════════════════
 
 MENU_OPTIONS = [
-    ("1",  "📱", "Device Manager",          "List & manage connected Android devices"),
+    ("1",  "📱", "Device Manager",          "List & manage devices (with extended info)"),
     ("2",  "🔎", "APK Static Analyzer",     "Decompile & audit an APK file"),
     ("3",  "🌐", "Network Scanner",         "Port scan, WiFi info, host discovery"),
     ("4",  "🚨", "Vulnerability Scanner",   "CVE mapping, root check, insecure storage"),
@@ -200,7 +201,24 @@ def handle_device_manager():
     device_id = select_device()
     if not device_id:
         return
-    adb_manager.device_info(device_id)
+    
+    while True:
+        choice = Prompt.ask(
+            "\n[cyan]Device Manager[/]",
+            choices=["1", "2", "0"],
+            default="0"
+        )
+        
+        if choice == "1":
+            adb_manager.device_info(device_id)
+        elif choice == "2":
+            adb_manager.device_info_extended(device_id)
+        elif choice == "0":
+            break
+        
+        console.print()
+        Prompt.ask("[dim]Press ENTER to continue[/]", default="")
+
 
 
 def handle_apk_analyzer():
@@ -582,6 +600,7 @@ Examples:
     dg.add_argument("--devices",           action="store_true",    help="List connected devices")
     dg.add_argument("--device", "-d",      metavar="SERIAL",       help="Target device serial number")
     dg.add_argument("--info",              action="store_true",    help="Show device info")
+    dg.add_argument("--full-device-info",  action="store_true",    help="Show extended device info (hardware, security, network, services, capabilities)")
     dg.add_argument("--shell",             metavar="CMD",          help="Run ADB shell command")
     dg.add_argument("--adb-shell",         action="store_true",    help="Drop into interactive ADB shell")
     dg.add_argument("--adb-wifi",          action="store_true",    help="Enable ADB over WiFi")
@@ -667,6 +686,10 @@ def cli_mode(args):
     # Device info
     if args.info and device_id:
         adb_manager.device_info(device_id)
+
+    # Extended device info
+    if args.full_device_info and device_id:
+        adb_manager.device_info_extended(device_id)
 
     # Shell command
     if args.shell and device_id:

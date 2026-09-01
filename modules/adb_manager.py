@@ -11,6 +11,7 @@ from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
 from rich import box
+from . import device_info_extended
 
 console = Console()
 
@@ -226,3 +227,14 @@ def interactive_shell(device_id: str):
         cmd += ["-s", device_id]
     cmd += ["shell"]
     subprocess.call(cmd)
+
+
+def device_info_extended(device_id: str):
+    """Display extended device information with hardware, security, network, etc."""
+    device_info_extended.display_full_device_info(device_id)
+
+
+def get_device_info_extended_dict(device_id: str) -> dict:
+    """Get extended device info as a structured dictionary."""
+    return device_info_extended.get_full_device_info_dict(device_id)
+
